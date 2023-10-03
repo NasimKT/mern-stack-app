@@ -1,23 +1,23 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import RegistrationForm from './RegistrationForm';
+import SignInForm from './SignInForm';
 import './App.css';
 
 function App() {
+  const [showRegistration, setShowRegistration] = useState(true);
+
+  const toggleForm = () => {
+    setShowRegistration(!showRegistration);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="form-toggle">
+        <button onClick={toggleForm}>
+          {showRegistration ? 'Sign In' : 'Register'}
+        </button>
+      </div>
+      {showRegistration ? <RegistrationForm /> : <SignInForm />}
     </div>
   );
 }
