@@ -40,6 +40,50 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+app.post('/api/adminlogin', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Check if the provided username and password match your admin credentials
+    if (username === 'admin' && password === 'adminpassword') {
+      // Admin credentials match; you can consider the admin authenticated
+      res.status(200).json({ message: 'Admin login successful' });
+    } else {
+      // Admin credentials don't match; return an error
+      res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+  } catch (error) {
+    console.error('Error during admin login:', error);
+    res.status(500).json({ message: 'Admin login failed' });
+  }
+});
+
+app.post('/api/signin', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    // If the user doesn't exist, return an error
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if the provided password matches the stored password
+    if (password === user.password) {
+      // Passwords match; you can consider the user authenticated
+      res.status(200).json({ message: 'Sign-in successful' });
+    } else {
+      // Passwords don't match; return an error
+      res.status(401).json({ message: 'Invalid credentials' });
+    }
+  } catch (error) {
+    console.error('Error during sign-in:', error);
+    res.status(500).json({ message: 'Sign-in failed' });
+  }
+});
+
 // API endpoints for registration, sign-in, OTP sending, and OTP verification
 app.post('/api/register', async (req, res) => {
   const { name, email, phone, password } = req.body;
@@ -113,6 +157,11 @@ function generateOTP(length) {
   }
   return otp;
 }
+
+
+const vehiclesRouter = require('./routes/vehicles'); // Import the vehicle routes
+
+app.use('/api/vehicles', vehiclesRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
