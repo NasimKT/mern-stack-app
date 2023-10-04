@@ -6,12 +6,15 @@ function AdminDashboard() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    image: null,
   });
   const [editVehicleId, setEditVehicleId] = useState(null);
 
+  const apiUrl = 'http://localhost:5000/api/vehicles';
+
   const fetchVehicles = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles');
+      const response = await fetch(apiUrl);
       if (response.status === 200) {
         const data = await response.json();
         setVehicles(data);
@@ -28,28 +31,39 @@ function AdminDashboard() {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    if (e.target.name === 'image') {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.files[0],
+      });
+    } else {
+      const { name, value } = e.target;
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleAddVehicle = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/vehicles/add', {
+      const formDataForApi = new FormData();
+      formDataForApi.append('name', formData.name);
+      formDataForApi.append('description', formData.description);
+      formDataForApi.append('image', formData.image);
+
+      const response = await fetch(`${apiUrl}/add`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formDataForApi,
       });
+
       if (response.status === 200) {
         alert('Vehicle added successfully');
         fetchVehicles();
         setFormData({
           name: '',
           description: '',
+          image: null,
         });
       } else {
         console.error('Failed to add vehicle');
@@ -64,23 +78,27 @@ function AdminDashboard() {
       alert('Please select a vehicle to edit.');
       return;
     }
-  
+
     try {
-      const response = await fetch(`http://localhost:5000/api/vehicles/edit/${editVehicleId}`, {
+      const formDataForApi = new FormData();
+      formDataForApi.append('name', formData.name);
+      formDataForApi.append('description', formData.description);
+      formDataForApi.append('image', formData.image);
+
+      const response = await fetch(`${apiUrl}/edit/${editVehicleId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formDataForApi,
       });
+
       if (response.status === 200) {
         alert('Vehicle edited successfully');
         fetchVehicles();
         setFormData({
           name: '',
           description: '',
+          image: null,
         });
-        setEditVehicleId(null); // Clear the edit mode
+        setEditVehicleId(null);
       } else if (response.status === 404) {
         console.error('Vehicle not found. Server returned 404.');
       } else {
@@ -90,10 +108,9 @@ function AdminDashboard() {
       console.error('Error:', error);
     }
   };
-  
 
   const handleStartEdit = (_id) => {
-    setEditVehicleId(_id); // Use _id as the identifier
+    setEditVehicleId(_id);
     const vehicleToEdit = vehicles.find((vehicle) => vehicle._id === _id);
     if (vehicleToEdit) {
       setFormData({
@@ -107,13 +124,14 @@ function AdminDashboard() {
     setFormData({
       name: '',
       description: '',
+      image: null,
     });
     setEditVehicleId(null);
   };
 
   const handleDeleteVehicle = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/vehicles/delete-vehicle/${id}`, {
+      const response = await fetch(`${apiUrl}/delete-vehicle/${id}`, {
         method: 'DELETE',
       });
       if (response.status === 200) {
@@ -128,11 +146,6 @@ function AdminDashboard() {
       console.error('Error:', error);
     }
   };
-  
-  
-  
-  
-  
 
   return (
     <div className="admin-dashboard">
@@ -153,6 +166,19 @@ function AdminDashboard() {
           value={formData.description}
           onChange={handleChange}
         />
+        <input
+          type="file"
+          name="image"
+          accept="image/*"
+          onChange={handleChange}
+        />
+        <input
+          type="number"
+          name="availableUnits"
+          placeholder="Available Units"
+          value={formData.availableUnits}
+          onChange={handleChange}
+        />
         {editVehicleId ? (
           <>
             <button onClick={handleEditVehicle}>Save Edit</button>
@@ -164,15 +190,39 @@ function AdminDashboard() {
       </div>
       <div className="vehicle-list">
         <h3>Vehicle List</h3>
-        <ul>
-          {vehicles.map((vehicle) => (
-            <li key={vehicle._id}>
-              {vehicle.name} - {vehicle.description}
-              <button onClick={() => handleStartEdit(vehicle._id)}>Edit</button>
-              <button onClick={() => handleDeleteVehicle(vehicle._id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Available Units</th>
+              <th>Image</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vehicles.map((vehicle) => (
+              <tr key={vehicle._id}>
+                <td>{vehicle.name}</td>
+                <td>{vehicle.description}</td>
+                <td>{vehicle.availableUnits}</td>
+                <td>
+                  {vehicle.image && (
+                    <img
+                      src={`http://localhost:5000/api/vehicles/image/${vehicle.image}`}
+                      alt={`${vehicle.name}`}
+                      style={{ maxWidth: '100px' }}
+                    />
+                  )}
+                </td>
+                <td>
+                  <button onClick={() => handleStartEdit(vehicle._id)}>Edit</button>
+                  <button onClick={() => handleDeleteVehicle(vehicle._id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
