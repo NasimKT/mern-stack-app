@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import './SignInForm.css';
 
-function SignInForm() {
+function SignInForm({ onSignInSuccess }) {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -42,7 +41,7 @@ function SignInForm() {
         });
         if (response.status === 200) {
           alert('Sign-in successful');
-          // Redirect or display a success message to the user
+          onSignInSuccess(); // Call the prop function on success
         } else if (response.status === 401) {
           alert('Invalid credentials');
           // Display an error message to the user
