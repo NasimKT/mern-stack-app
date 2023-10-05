@@ -7,6 +7,7 @@ function AdminDashboard() {
     name: '',
     description: '',
     image: null,
+    units: 0,
   });
   const [editVehicleId, setEditVehicleId] = useState(null);
 
@@ -51,6 +52,7 @@ function AdminDashboard() {
       formDataForApi.append('name', formData.name);
       formDataForApi.append('description', formData.description);
       formDataForApi.append('image', formData.image);
+      formDataForApi.append('units', formData.units);
 
       const response = await fetch(`${apiUrl}/add`, {
         method: 'POST',
@@ -64,6 +66,7 @@ function AdminDashboard() {
           name: '',
           description: '',
           image: null,
+          units: 0,
         });
       } else {
         console.error('Failed to add vehicle');
@@ -84,6 +87,7 @@ function AdminDashboard() {
       formDataForApi.append('name', formData.name);
       formDataForApi.append('description', formData.description);
       formDataForApi.append('image', formData.image);
+      formDataForApi.append('units', formData.units);
 
       const response = await fetch(`${apiUrl}/edit/${editVehicleId}`, {
         method: 'PUT',
@@ -97,6 +101,7 @@ function AdminDashboard() {
           name: '',
           description: '',
           image: null,
+          units: 0,
         });
         setEditVehicleId(null);
       } else if (response.status === 404) {
@@ -116,6 +121,7 @@ function AdminDashboard() {
       setFormData({
         name: vehicleToEdit.name,
         description: vehicleToEdit.description,
+        units: vehicleToEdit.units,
       });
     }
   };
@@ -125,6 +131,7 @@ function AdminDashboard() {
       name: '',
       description: '',
       image: null,
+      units: 0,
     });
     setEditVehicleId(null);
   };
@@ -174,9 +181,9 @@ function AdminDashboard() {
         />
         <input
           type="number"
-          name="availableUnits"
+          name="units"
           placeholder="Available Units"
-          value={formData.availableUnits}
+          value={formData.units}
           onChange={handleChange}
         />
         {editVehicleId ? (
@@ -205,7 +212,7 @@ function AdminDashboard() {
               <tr key={vehicle._id}>
                 <td>{vehicle.name}</td>
                 <td>{vehicle.description}</td>
-                <td>{vehicle.availableUnits}</td>
+                <td>{vehicle.units}</td>
                 <td>
                   {vehicle.image && (
                     <img

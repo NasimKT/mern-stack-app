@@ -41,7 +41,7 @@ function App() {
               <button onClick={toggleForm}>
                 {currentForm === 'registration' ? 'Sign In' : 'Register'}
               </button>
-              <button onClick={toggleAdminForm}>Admin Login</button>
+              <button style={{background:'black'}} onClick={toggleAdminForm}>Admin Login</button>
             </div>
           )}
         </>

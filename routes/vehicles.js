@@ -21,7 +21,8 @@ const upload = multer({ storage });
 const vehicleSchema = new mongoose.Schema({
   name: String,
   description: String,
-  image: String, // Add a field to store the image filename
+  image: String,
+  units: Number,
 });
 
 const Vehicle = mongoose.model('Vehicle', vehicleSchema);
@@ -30,6 +31,7 @@ const Vehicle = mongoose.model('Vehicle', vehicleSchema);
 router.get('/', async (req, res) => {
   try {
     const vehicles = await Vehicle.find();
+    console.log('Vehicles fetched successfully');
     res.status(200).json(vehicles);
   } catch (error) {
     console.error('Error fetching vehicles:', error);
@@ -39,20 +41,24 @@ router.get('/', async (req, res) => {
 
 // Add a new vehicle with image upload
 router.post('/add', upload.single('image'), async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, units } = req.body;
   const image = req.file.filename; // Get the filename of the uploaded image
+
+  console.log('Received data:', name, description, units, image);
 
   const newVehicle = new Vehicle({
     name,
     description,
-    image, // Save the image filename in the database
+    image,
+    units,
   });
 
   try {
     await newVehicle.save();
+    console.log('Vehicle added successfully');
     res.status(200).json({ message: 'Vehicle added successfully' });
   } catch (err) {
-    console.error(err);
+    console.error('Error adding vehicle:', err);
     res.status(500).json({ message: 'Failed to add vehicle' });
   }
 });
@@ -62,25 +68,31 @@ router.get('/image/:filename', (req, res) => {
   const { filename } = req.params;
   const imagePath = path.join(__dirname, '../uploads', filename);
 
+  console.log('Sending image:', imagePath);
+
   res.sendFile(imagePath);
 });
 
 // Edit an existing vehicle by ID
 router.put('/edit/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, description } = req.body;
+  const { name, description, units } = req.body;
+
+  console.log('Received data for edit:', id, name, description, units);
 
   try {
     const vehicle = await Vehicle.findByIdAndUpdate(
       id,
-      { name, description },
+      { name, description, units },
       { new: true }
     );
 
     if (!vehicle) {
+      console.log('Vehicle not found');
       return res.status(404).json({ message: 'Vehicle not found' });
     }
 
+    console.log('Vehicle edited successfully');
     res.status(200).json({ message: 'Vehicle edited successfully' });
   } catch (error) {
     console.error('Error during vehicle edit:', error);
@@ -92,12 +104,16 @@ router.put('/edit/:id', async (req, res) => {
 router.delete('/delete-vehicle/:id', async (req, res) => {
   const { id } = req.params;
 
+  console.log('Received request to delete vehicle:', id);
+
   try {
     const result = await Vehicle.deleteOne({ _id: id });
 
     if (result.deletedCount === 1) {
+      console.log('Vehicle deleted successfully');
       res.status(200).json({ message: 'Vehicle deleted successfully' });
     } else {
+      console.log('Vehicle not found');
       res.status(404).json({ message: 'Vehicle not found' });
     }
   } catch (error) {
